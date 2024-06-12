@@ -1,0 +1,28 @@
+services:
+  db:
+    image: "mariadb:10.4"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_USER: root
+    volumes:
+      - ./db:/var/lib/mysql
+    #entrypoint: ["/usr/bin/msqld -u root -p rootpw < /var/lib/mysql/cree_db_table.sql","/usr/bin/msqld -u root -p rootpw < /var/lib/mysql/insert_articles.sql"]
+  php-fpm:
+    image: "bitnami/php-fpm"
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./frontend :/var/www/html
+  proxy:
+    image: "haproxy:latest"
+    ports:
+      - "80:80"
+  web:
+    image: 'httpd:latest'
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend :/var/www/html
+    
