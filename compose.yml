@@ -7,7 +7,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_USER: root
-      MYSQL_PASSWORD: rootpw
+      MYSQL_ROOT_PASSWORD: rootpw
     volumes:
       - ./db:/docker-entrypoint-initdb.d
     networks:
@@ -24,8 +24,7 @@ services:
 
   web:
     image: 'httpd:latest'
-    ports:
-      - "8080:80"
+    container_name: web
     volumes:
       - ./front_end:/usr/local/apache2/htdocs
       - ./httpd_conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
@@ -34,7 +33,30 @@ services:
       - php-fpm
     networks:
       - my_network
-
+    expose:
+      - "80"
+  web2:
+    image: 'httpd:latest'
+    container_name: web2
+    volumes:
+      - ./front_end:/usr/local/apache2/htdocs
+      - ./httpd_conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./front_end:/var/www/html
+    networks:
+      - my_network
+    expose:
+      - "80"
+  haproxy:
+    image: haproxy:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - my_network
+    depends_on:
+      - web
+      - web2
 networks:
   my_network:
     driver: bridge

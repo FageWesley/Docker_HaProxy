@@ -3,7 +3,7 @@
 echo "<html>
  <head>
   <meta charset='utf-8'> 
-  <title>PHP Test</title>
+  <title></title>
  </head>
  <body>";
 
