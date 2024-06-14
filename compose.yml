@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  #region db
   db:
     image: "mariadb:10.4"
     ports:
@@ -12,16 +13,28 @@ services:
       - ./db:/docker-entrypoint-initdb.d
     networks:
       - my_network
-
+  #endregion
+  #region php-fpm
   php-fpm:
     image: bitnami/php-fpm
+    container_name: php-fpm
     depends_on:
       - db
     volumes:
       - ./front_end:/var/www/html
     networks:
       - my_network
-
+  php-fpm2:
+    image: bitnami/php-fpm
+    container_name: php-fpm2
+    depends_on:
+      - db
+    volumes:
+      - ./front_end:/var/www/html
+    networks:
+      - my_network
+  #endregion
+  #region web
   web:
     image: 'httpd:latest'
     container_name: web
@@ -40,12 +53,16 @@ services:
     container_name: web2
     volumes:
       - ./front_end:/usr/local/apache2/htdocs
-      - ./httpd_conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./httpd_conf2/httpd.conf:/usr/local/apache2/conf/httpd.conf
       - ./front_end:/var/www/html
+    depends_on:
+      - php-fpm2
     networks:
       - my_network
     expose:
       - "80"
+#endregion
+  #region proxy
   haproxy:
     image: haproxy:latest
     ports:
@@ -57,6 +74,7 @@ services:
     depends_on:
       - web
       - web2
+  #endregion
 networks:
   my_network:
     driver: bridge
