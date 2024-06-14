@@ -7,7 +7,7 @@ echo "<html>
  </head>
  <body>";
 
-$server = "mariadb_docker";
+$server = "db";
 $user = "root";
 $pwd = "rootpw";
 $db = "magasin";

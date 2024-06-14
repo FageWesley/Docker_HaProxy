@@ -1,28 +1,40 @@
+version: '3.8'
+
 services:
   db:
     image: "mariadb:10.4"
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpw
       MYSQL_USER: root
+      MYSQL_PASSWORD: rootpw
     volumes:
-      - ./db:/var/lib/mysql
-    #entrypoint: ["/usr/bin/msqld -u root -p rootpw < /var/lib/mysql/cree_db_table.sql","/usr/bin/msqld -u root -p rootpw < /var/lib/mysql/insert_articles.sql"]
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - my_network
+
   php-fpm:
-    image: "bitnami/php-fpm"
-    ports:
-      - "9000:9000"
+    image: bitnami/php-fpm
+    depends_on:
+      - db
     volumes:
-      - ./frontend :/var/www/html
-  proxy:
-    image: "haproxy:latest"
-    ports:
-      - "80:80"
+      - ./front_end:/var/www/html
+    networks:
+      - my_network
+
   web:
     image: 'httpd:latest'
     ports:
       - "8080:80"
     volumes:
-      - ./frontend :/var/www/html
-    
+      - ./front_end:/usr/local/apache2/htdocs
+      - ./httpd_conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./front_end:/var/www/html
+    depends_on:
+      - php-fpm
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
